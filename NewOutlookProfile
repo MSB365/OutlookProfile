@@ -1,0 +1,92 @@
+#region Description
+<#     
+       .NOTES
+       ==============================================================================
+       Created on:         2024/01/11 
+       Created by:         Drago Petrovic
+       Organization:       MSB365.blog
+       Filename:           NewOutlookProfile.ps1
+       Current version:    V1.00     
+
+       Find us on:
+             * Website:         https://www.msb365.blog
+             * Technet:         https://social.technet.microsoft.com/Profile/MSB365
+             * LinkedIn:        https://www.linkedin.com/in/drago-petrovic/
+             * MVP Profile:     https://mvp.microsoft.com/de-de/PublicProfile/5003446
+       ==============================================================================
+
+       .DESCRIPTION
+       This script first checks if Outlook is running and closes it if necessary. It then creates a new Outlook profile named as defined in the variable in the registry and sets it as the default profile. 
+       After that, it launches Outlook with this newly created profile         
+          
+       
+
+       .NOTES
+       Please note that this script is for Outlook 2016+ (Office 16.0). If you’re using a different version of Office, you’ll need to adjust the registry path accordingly. 
+       Also, please be aware that modifying the registry can have serious consequences if not done correctly. Always make sure to back up your registry before making any changes.
+
+
+
+
+
+       .EXAMPLE
+       .\NewOutlookProfile.ps1 
+             
+
+       .COPYRIGHT
+       Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), 
+       to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+       and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+       The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+       FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+       WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+       ===========================================================================
+       .CHANGE LOG
+             V1.00, 2024/01/11 - DrPe - Initial version
+             
+
+             
+			 
+
+
+
+
+--- keep it simple, but significant ---
+
+
+--- by MSB365 Blog ---
+
+#>
+
+##### Set variable #####
+$NewProfileName = 'Outlook Profile Name'
+
+##########
+
+# Check if Outlook is running
+if ($process = (Get-Process 'outlook' -ErrorAction SilentlyContinue)) {
+    Write-Host "Outlook is running so close it.." -ForegroundColor Green
+    kill ($process)
+    Write-Host "Outlook is stopped" -ForegroundColor Green
+}
+
+# Define the registry path for Outlook profiles
+$reg = "HKCU:\\Software\\Microsoft\\Office\\16.0\\Outlook\\Profiles"
+
+# Create a new profile
+Write-Host "Now create new profile for outlook" -ForegroundColor Green
+New-Item -Name $NewProfileName -Path $reg -Force -Verbose
+Write-Host "New profile created" -ForegroundColor Green
+
+# Set the new profile as the default profile
+Set-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Office\\16.0\\Outlook" -Name "DefaultProfile" -Value "NewProfile"
+
+write-host "New Outlook Profile '$NewProfileName' is created and set as default." -ForegroundColor Green
+Start-Sleep -s 3
+
+# Launch Outlook with the newly created profile
+Write-Host "Launch outlook with newly created profile" -ForegroundColor Green
+Start-Process 'outlook' -ErrorAction SilentlyContinue -ArgumentList '/profile "NewProfile"'
